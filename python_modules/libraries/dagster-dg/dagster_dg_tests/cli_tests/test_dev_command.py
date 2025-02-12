@@ -5,7 +5,6 @@ import subprocess
 import time
 
 import psutil
-import pytest
 import requests
 from dagster_dg.utils import ensure_dagster_dg_tests_import, is_windows
 from dagster_graphql.client import DagsterGraphQLClient
@@ -27,6 +26,7 @@ def test_dev_command_deployment_context_success():
     with ProxyRunner.test() as runner, isolated_example_deployment_foo(runner, create_venv=True):
         runner.invoke("code-location", "scaffold", "code-location-1")
         runner.invoke("code-location", "scaffold", "code-location-2")
+
         port = _find_free_port()
         dev_process = _launch_dev_command(["--port", str(port)])
         code_locations = {"code-location-1", "code-location-2"}

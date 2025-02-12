@@ -18,6 +18,16 @@ from dagster_dg.config import normalize_cli_config
 from dagster_dg.context import DgContext
 from dagster_dg.error import DgError
 from dagster_dg.utils import DgClickCommand, exit_with_error, get_uv_run_executable_path, pushd
+from dagster_dg.utils import (
+    DgClickCommand,
+    exit_with_error,
+    get_uv_run_executable_path,
+    get_venv_executable,
+    interrupt_subprocess,
+    is_windows,
+    open_subprocess,
+    pushd,
+)
 
 T = TypeVar("T")
 
@@ -105,6 +115,20 @@ def dev_command(
         cmd = ["uv", "run", "dagster", "dev", *forward_options]
         cmd_location = get_uv_run_executable_path("dagster")
         temp_workspace_file_cm = nullcontext()
+
+    # In a deployment context with a venv containing dagster and dagster-webserver (both are
+    # required for `dagster dev`), we can run `dagster dev` using whatever is installed in the
+    # deployment venv.
+    elif (
+        dg_context.is_deployment
+        and dg_context.has_venv
+        and get_venv_executable(dg_context.venv_path, "dagster").exists()
+        and get_venv_executable(dg_context.venv_path, "dagster-webserver").exists()
+    ):
+        # --no-project because we might not have the necessary fields in deployment pyproject.toml
+        cmd = ["uv", "run", "--no-project", "dagster", "dev", *forward_options]
+        cmd_location = get_uv_run_executable_path("dagster")
+        temp_workspace_file_cm = _temp_workspace_file(dg_context)
 
     # In a deployment context, dg dev will construct a temporary
     # workspace file that points at all defined code locations and invoke:
