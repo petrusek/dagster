@@ -21,7 +21,7 @@ mdx_copy:
 	cp -rf sphinx/_build/mdx/sections/api/apidocs/* docs/api/python-api/
 
 regenerate_cli_snippets:
-	cd ../examples/docs_beta_snippets && tox -e docs_snapshot_update && echo "\nSnippets regenerated!"
+	cd ../examples/docs_beta_snippets && tox -re docs_snapshot_update && echo "\nSnippets regenerated!"
 
 regenerate_cli_snippets_and_test:
 	cd ../examples/docs_beta_snippets && tox -e docs_snapshot_update && tox -e docs_snapshot_test && echo "\nSnippets regenerated and tested!"
